@@ -1,7 +1,7 @@
 # OpenCart
 
 ## Overview
-
+[![Coverage Status](https://coveralls.io/repos/github/opencartcomvn/opencart-4/badge.svg?branch=master)](https://coveralls.io/github/opencartcomvn/opencart-4?branch=master)
 [![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%208.0-8892BF.svg?style=flat-square)](https://php.net/)
 [![GitHub release](https://img.shields.io/github/v/release/opencart/opencart)](https://github.com/opencart/opencart)
 
