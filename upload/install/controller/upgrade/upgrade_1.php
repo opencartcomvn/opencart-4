@@ -194,10 +194,42 @@ class Upgrade1 extends \Opencart\System\Engine\Controller {
 				// 2. Move current config file to default admin directory.
 				rename($file, $path_old . 'config.php');
 
-				// 3. Remove the current
-				rmdir($path_new);
+				// 3. Remove the current directory
+				$files = [];
 
-				// 4.
+				// Make path into an array
+				$directory = [$path_new];
+
+				// While the path array is still populated keep looping through
+				while (count($directory) != 0) {
+					$next = array_shift($directory);
+
+					if (is_dir($next)) {
+						foreach (glob(trim($next, '/') . '/{*,.[!.]*,..?*}', GLOB_BRACE) as $delete) {
+							// If directory add to path array
+							$directory[] = $delete;
+						}
+					}
+
+					// Add the file to the files to be deleted array
+					$files[] = $next;
+				}
+
+				// Reverse sort the file array
+				rsort($files);
+
+				foreach ($files as $delete) {
+					// If file just delete
+					if (is_file($delete)) {
+						unlink($delete);
+
+						// If directory use the remove directory function
+					} elseif (is_dir($delete)) {
+						rmdir($delete);
+					}
+				}
+
+				// 4. Rename folder to the old directory
 				rename(DIR_OPENCART . 'admin/', $path_new);
 			}
 
@@ -276,48 +308,90 @@ class Upgrade1 extends \Opencart\System\Engine\Controller {
 			'upload'
 		];
 
-		foreach ($directories as $directory) {
-			if (!is_dir(DIR_STORAGE . $directory)) {
-				mkdir(DIR_STORAGE . $directory, '0644');
+		if (isset($config['DIR_STORAGE'])) {
+			$storage = $config['DIR_STORAGE'];
+		} else {
+			$storage = DIR_SYSTEM . 'storage/';
+		}
 
-				$handle = fopen(DIR_STORAGE . $directory . '/index.html', 'w');
+		foreach ($directories as $directory) {
+			if (!is_dir($storage . $directory)) {
+				mkdir($storage . $directory, '0644');
+
+				$handle = fopen($storage . $directory . '/index.html', 'w');
 
 				fclose($handle);
 			}
 		}
 
-		// Merge system/upload to system/storage/upload
-		if (is_dir(DIR_SYSTEM . 'upload')) {
-			$this->recursive_move(DIR_SYSTEM . 'upload', DIR_STORAGE . 'upload');
-		}
+		// Move files from old directories to new ones.
+		$move = [
+			DIR_IMAGE . 'data/'      => DIR_IMAGE . 'catalog/', // Merge image/data to image/catalog
+			DIR_SYSTEM . 'upload/'   => $storage . 'upload/', // Merge system/upload to system/storage/upload
+			DIR_SYSTEM . 'download/' => $storage . 'download/' // Merge system/download to system/storage/download
+		];
 
-		// Merge image/data to image/catalog
-		if (is_dir(DIR_IMAGE . 'data')) {
-			if (!is_dir(DIR_IMAGE . 'catalog')) {
-				rename(DIR_IMAGE . 'data', DIR_IMAGE . 'catalog'); // Rename data to catalog
-			} else {
-				$this->recursive_move(DIR_IMAGE . 'data', DIR_IMAGE . 'catalog');
+		foreach ($move as $source => $destination) {
+			$files = [];
 
-				@unlink(DIR_IMAGE . 'data');
+			$directory = [$source];
+
+			while (count($directory) != 0) {
+				$next = array_shift($directory);
+
+				foreach (glob(rtrim($next, '/') . '/{*,.[!.]*,..?*}', GLOB_BRACE) as $file) {
+					// If directory add to path array
+					if (is_dir($file)) {
+						$directory[] = $file;
+					}
+
+					// Add the file to the files to be deleted array
+					$files[] = $file;
+				}
 			}
+
+			foreach ($files as $file) {
+				$path = substr($file, strlen($source));
+
+				if (is_dir($source . $path) && !is_dir($destination . $path)) {
+					mkdir($destination . $path, 0777);
+				}
+
+				if (is_file($source . $path) && !is_file($destination . $path)) {
+					copy($source . $path, $destination . $path);
+				}
+			}
+
+			// Start deleting old storage location files.
+			rsort($files);
+
+			foreach ($files as $file) {
+				// If file just delete
+				if (is_file($file)) {
+					unlink($file);
+				}
+
+				// If directory use the remove directory function
+				if (is_dir($file)) {
+					rmdir($file);
+				}
+			}
+
+			rmdir($source);
 		}
 
-		if (is_dir(DIR_SYSTEM . 'download')) {
-			$this->recursive_move(DIR_SYSTEM . 'download', DIR_STORAGE . 'download');
-		}
-
-		// Cleanup files in old directories
-		$directories = [
+		// Remove files in old directories
+		$remove = [
 			DIR_SYSTEM . 'logs/',
 			DIR_SYSTEM . 'cache/',
 		];
 
 		$files = [];
 
-		foreach ($directories as $dir) {
-			if (is_dir($dir)) {
+		foreach ($remove as $directory) {
+			if (is_dir($directory)) {
 				// Make path into an array
-				$path = [$dir . '*'];
+				$path = [$directory . '*'];
 
 				// While the path array is still populated keep looping through
 				while (count($path) != 0) {
@@ -338,13 +412,15 @@ class Upgrade1 extends \Opencart\System\Engine\Controller {
 
 					// Clear all modification files
 					foreach ($files as $file) {
-						if ($file != $dir . 'index.html') {
+						if ($file != $directory . 'index.html') {
 							// If file just delete
 							if (is_file($file)) {
 								@unlink($file);
 
-								// If directory use the remove directory function
-							} elseif (is_dir($file)) {
+							}
+
+							// If directory use the remove directory function
+							if (is_dir($file)) {
 								@rmdir($file);
 							}
 						}
@@ -371,34 +447,5 @@ class Upgrade1 extends \Opencart\System\Engine\Controller {
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
-	}
-
-	private function recursive_move($src, $dest) {
-		// If source is not a directory stop processing
-		if (!is_dir($src)) return false;
-
-		// If the destination directory does not exist create it
-		if (!is_dir($dest)) {
-			if (!@mkdir($dest)) {
-				// If the destination directory could not be created stop processing
-				return false;
-			}
-		}
-
-		// Open the source directory to read in files
-		$i = new \DirectoryIterator($src);
-
-		foreach ($i as $f) {
-			if ($f->isFile() && !file_exists("$dest/" . $f->getFilename())) {
-				@rename($f->getRealPath(), "$dest/" . $f->getFilename());
-			} elseif (!$f->isDot() && $f->isDir()) {
-				$this->recursive_move($f->getRealPath(), "$dest/$f");
-
-				@unlink($f->getRealPath());
-			}
-		}
-
-		// Remove source folder after move
-		@unlink($src);
 	}
 }

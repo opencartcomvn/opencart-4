@@ -26,7 +26,7 @@ class Review extends \Opencart\System\Engine\Controller {
 		}
 
 		// Create a login token to prevent brute force attacks
-		$this->session->data['review_token'] = Helper\General\token(32);
+		$this->session->data['review_token'] = oc_token(32);
 
 		$data['review_token'] = $this->session->data['review_token'];
 
@@ -73,11 +73,11 @@ class Review extends \Opencart\System\Engine\Controller {
 			}
 		}
 
-		if ((Helper\Utf8\strlen($this->request->post['name']) < 3) || (Helper\Utf8\strlen($this->request->post['name']) > 25)) {
+		if ((oc_strlen($this->request->post['name']) < 3) || (oc_strlen($this->request->post['name']) > 25)) {
 			$json['error']['name'] = $this->language->get('error_name');
 		}
 
-		if ((Helper\Utf8\strlen($this->request->post['text']) < 25) || (Helper\Utf8\strlen($this->request->post['text']) > 1000)) {
+		if ((oc_strlen($this->request->post['text']) < 25) || (oc_strlen($this->request->post['text']) > 1000)) {
 			$json['error']['text'] = $this->language->get('error_text');
 		}
 
