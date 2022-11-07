@@ -40,14 +40,12 @@ class Setting extends \Opencart\System\Engine\Controller {
 		$extensions = $this->model_setting_extension->getExtensionsByType('theme');
 
 		foreach ($extensions as $extension) {
-			if ($this->config->get('theme_' . $extension['code'] . '_status')) {
-				$this->load->language('extension/' . $extension['extension'] . '/theme/' . $extension['code'], 'extension');
+			$this->load->language('extension/' . $extension['extension'] . '/theme/' . $extension['code'], 'extension');
 
-				$data['themes'][] = [
-					'text'  => $this->language->get('extension_heading_title'),
-					'value' => $extension['code']
-				];
-			}
+			$data['themes'][] = [
+				'text'  => $this->language->get('extension_heading_title'),
+				'value' => $extension['code']
+			];
 		}
 
 		$data['config_theme'] = $this->config->get('config_theme');
@@ -806,24 +804,18 @@ class Setting extends \Opencart\System\Engine\Controller {
 	}
 
 	public function theme(): void {
-		$image = '';
-
-		$theme = basename($this->request->get['theme']);
-
-		if ($theme == 'basic') {
-			$image = HTTP_CATALOG . 'catalog/view/image/' . $theme . '.png';
+		if (isset($this->request->get['theme'])) {
+			$theme = basename($this->request->get['theme']);
 		} else {
-			$this->load->model('setting/extension');
-
-			$extension_info = $this->model_setting_extension->getExtensionByCode('theme', $theme);
-
-			if ($extension_info) {
-				$image = HTTP_CATALOG . 'extension/' . $extension_info['extension'] . '/catalog/view/image/' . $extension_info['code'] . '.png';
-			}
+			$theme = '';
 		}
 
-		if ($image) {
-			$this->response->setOutput($image);
+		$this->load->model('setting/extension');
+
+		$extension_info = $this->model_setting_extension->getExtensionByCode('theme', $theme);
+
+		if ($extension_info) {
+			$this->response->setOutput(HTTP_CATALOG . 'extension/' . $extension_info['extension'] . '/admin/view/image/' . $extension_info['code'] . '.png');
 		} else {
 			$this->response->setOutput(HTTP_CATALOG . 'image/no_image.png');
 		}
