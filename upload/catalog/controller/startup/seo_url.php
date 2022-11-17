@@ -1,13 +1,13 @@
 <?php
 namespace Opencart\Catalog\Controller\Startup;
 class SeoUrl extends \Opencart\System\Engine\Controller {
+	private int $language_id = 0;
+
 	public function index(): void {
 		// Add rewrite to URL class
 		if ($this->config->get('config_seo_url')) {
 			$this->url->addRewrite($this);
 		}
-
-		$this->load->model('design/seo_url');
 
 		// Decode URL
 		if (isset($this->request->get['_route_'])) {
@@ -26,6 +26,23 @@ class SeoUrl extends \Opencart\System\Engine\Controller {
 				}
 			}
 		}
+
+		// Language
+		if (isset($this->request->get['language'])) {
+			$code = $this->request->get['language'];
+		} else {
+			$code = $this->config->get('config_language');
+		}
+
+		$this->load->model('localisation/language');
+
+		$language_info = $this->model_localisation_language->getLanguageByCode($code);
+
+		if ($language_info) {
+			$this->language_id = $language_info['language_id'];
+		}
+
+		$this->load->model('design/seo_url');
 	}
 
 	public function rewrite(string $link): string {
@@ -59,7 +76,7 @@ class SeoUrl extends \Opencart\System\Engine\Controller {
 		foreach ($parts as $part) {
 			[$key, $value] = explode('=', $part);
 
-			$result = $this->model_design_seo_url->getSeoUrlByKeyValue((string)$key, (string)$value);
+			$result = $this->model_design_seo_url->getSeoUrlByKeyValue((string)$key, (string)$value, $this->language_id);
 
 			if ($result) {
 				$paths[] = $result;
