@@ -18,7 +18,7 @@ class PgSQL {
 		}
 
 		try {
-			$pg = @pg_connect('host=' . $hostname . ' port=' . $port .  ' user=' . $username . ' password='	. $password . ' dbname=' . $database . ' options=\'--client_encoding=UTF8\' ');
+			$pg = @pg_connect('host=' . $hostname . ' port=' . $port . ' user=' . $username . ' password=' . $password . ' dbname=' . $database . ' options=\'--client_encoding=UTF8\' ');
 		} catch (\Exception $e) {
 			throw new \Exception('Error: Could not make a database link using ' . $username . '@' . $hostname);
 		}
@@ -26,6 +26,8 @@ class PgSQL {
 		if ($pg) {
 			$this->connection = $pg;
 			pg_query($this->connection, "SET CLIENT_ENCODING TO 'UTF8'");
+			pg_query("SET SESSION sql_mode = 'NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION'");
+			pg_query($this->connection, "SET FOREIGN_KEY_CHECKS = 0");
 		}
 	}
 

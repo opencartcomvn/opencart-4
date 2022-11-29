@@ -1,6 +1,5 @@
 <?php
 namespace Opencart\Catalog\Controller\Mail;
-use \Opencart\System\Helper as Helper;
 class Register extends \Opencart\System\Engine\Controller {
 	// catalog/model/account/customer/addCustomer/after
 	public function index(string &$route, array &$args, mixed &$output): void {
@@ -108,7 +107,7 @@ class Register extends \Opencart\System\Engine\Controller {
 				$emails = explode(',', (string)$this->config->get('config_mail_alert_email'));
 
 				foreach ($emails as $email) {
-					if (Helper\Utf8\strlen($email) > 0 && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+					if (oc_strlen($email) > 0 && filter_var($email, FILTER_VALIDATE_EMAIL)) {
 						$mail->setTo(trim($email));
 						$mail->send();
 					}

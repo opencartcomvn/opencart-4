@@ -1,6 +1,5 @@
 <?php
 namespace Opencart\Catalog\Controller\Product;
-use \Opencart\System\Helper as Helper;
 class Product extends \Opencart\System\Engine\Controller {
 	public function index(): void {
 		$this->load->language('product/product');
@@ -448,7 +447,7 @@ class Product extends \Opencart\System\Engine\Controller {
 					'product_id'  => $result['product_id'],
 					'thumb'       => $image,
 					'name'        => $result['name'],
-					'description' => Helper\Utf8\substr(trim(strip_tags(html_entity_decode($result['description'], ENT_QUOTES, 'UTF-8'))), 0, $this->config->get('config_product_description_length')) . '..',
+					'description' => oc_substr(trim(strip_tags(html_entity_decode($result['description'], ENT_QUOTES, 'UTF-8'))), 0, $this->config->get('config_product_description_length')) . '..',
 					'price'       => $price,
 					'special'     => $special,
 					'tax'         => $tax,

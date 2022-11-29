@@ -1,6 +1,5 @@
 <?php
 namespace Opencart\Admin\Controller\Catalog;
-use \Opencart\System\Helper as Helper;
 class AttributeGroup extends \Opencart\System\Engine\Controller {
 	public function index(): void {
 		$this->load->language('catalog/attribute_group');
@@ -235,7 +234,7 @@ class AttributeGroup extends \Opencart\System\Engine\Controller {
 		}
 
 		foreach ($this->request->post['attribute_group_description'] as $language_id => $value) {
-			if ((Helper\Utf8\strlen(trim($value['name'])) < 1) || (Helper\Utf8\strlen($value['name']) > 64)) {
+			if ((oc_strlen(trim($value['name'])) < 1) || (oc_strlen($value['name']) > 64)) {
 				$json['error']['name_' . $language_id] = $this->language->get('error_name');
 			}
 		}

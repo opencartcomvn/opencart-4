@@ -80,10 +80,10 @@ $(document).ready(function () {
     // Tooltip
     var oc_tooltip = function () {
         // Get tooltip instance
-        tooltip = bootstrap.Tooltip.getInstance(this);
+        tooltip = bootstrap.Tooltip.getOrCreateInstance(this);
+
         if (!tooltip) {
             // Apply to current element
-            tooltip = bootstrap.Tooltip.getOrCreateInstance(this);
             tooltip.show();
         }
     }
@@ -155,7 +155,7 @@ $(document).ready(function () {
             $('.alert-dismissible').fadeTo(1000, 0, function () {
                 $(this).remove();
             });
-        }, 3000);
+        }, 6000);
     }
 
     $(document).on('click', 'button', oc_alert);

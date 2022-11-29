@@ -1,6 +1,5 @@
 <?php
 namespace Opencart\Admin\Controller\Catalog;
-use \Opencart\System\Helper as Helper;
 class Download extends \Opencart\System\Engine\Controller {
 	public function index(): void {
 		$this->load->language('catalog/download');
@@ -249,12 +248,12 @@ class Download extends \Opencart\System\Engine\Controller {
 		}
 
 		foreach ($this->request->post['download_description'] as $language_id => $value) {
-			if ((Helper\Utf8\strlen(trim($value['name'])) < 3) || (Helper\Utf8\strlen($value['name']) > 64)) {
+			if ((oc_strlen(trim($value['name'])) < 3) || (oc_strlen($value['name']) > 64)) {
 				$json['error']['name_' . $language_id] = $this->language->get('error_name');
 			}
 		}
 
-		if ((Helper\Utf8\strlen($this->request->post['filename']) < 3) || (Helper\Utf8\strlen($this->request->post['filename']) > 128)) {
+		if ((oc_strlen($this->request->post['filename']) < 3) || (oc_strlen($this->request->post['filename']) > 128)) {
 			$json['error']['filename'] = $this->language->get('error_filename');
 		}
 
@@ -266,7 +265,7 @@ class Download extends \Opencart\System\Engine\Controller {
 			$json['error']['filename'] = $this->language->get('error_exists');
 		}
 
-		if ((Helper\Utf8\strlen($this->request->post['mask']) < 3) || (Helper\Utf8\strlen($this->request->post['mask']) > 128)) {
+		if ((oc_strlen($this->request->post['mask']) < 3) || (oc_strlen($this->request->post['mask']) > 128)) {
 			$json['error']['mask'] = $this->language->get('error_mask');
 		}
 
@@ -410,7 +409,7 @@ class Download extends \Opencart\System\Engine\Controller {
 			$filename = basename(html_entity_decode($this->request->files['file']['name'], ENT_QUOTES, 'UTF-8'));
 
 			// Validate the filename length
-			if ((Helper\Utf8\strlen($filename) < 3) || (Helper\Utf8\strlen($filename) > 128)) {
+			if ((oc_strlen($filename) < 3) || (oc_strlen($filename) > 128)) {
 				$json['error'] = $this->language->get('error_filename');
 			}
 
@@ -451,7 +450,7 @@ class Download extends \Opencart\System\Engine\Controller {
 		}
 
 		if (!$json) {
-			$file = $filename . '.' . Helper\General\token(32);
+			$file = $filename . '.' . oc_token(32);
 
 			move_uploaded_file($this->request->files['file']['tmp_name'], DIR_DOWNLOAD . $file);
 

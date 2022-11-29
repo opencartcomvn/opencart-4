@@ -1,6 +1,5 @@
 <?php
 namespace Opencart\Catalog\Controller\Product;
-use \Opencart\System\Helper as Helper;
 class Manufacturer extends \Opencart\System\Engine\Controller {
 	public function index(): void {
 		$this->load->language('product/manufacturer');
@@ -26,10 +25,10 @@ class Manufacturer extends \Opencart\System\Engine\Controller {
 		$results = $this->model_catalog_manufacturer->getManufacturers();
 
 		foreach ($results as $result) {
-			if (is_numeric(Helper\Utf8\substr($result['name'], 0, 1))) {
+			if (is_numeric(oc_substr($result['name'], 0, 1))) {
 				$key = '0 - 9';
 			} else {
-				$key = Helper\Utf8\substr(Helper\Utf8\strtoupper($result['name']), 0, 1);
+				$key = oc_substr(oc_strtoupper($result['name']), 0, 1);
 			}
 
 			if (!isset($data['categories'][$key])) {
@@ -183,7 +182,7 @@ class Manufacturer extends \Opencart\System\Engine\Controller {
 					'product_id'  => $result['product_id'],
 					'thumb'       => $image,
 					'name'        => $result['name'],
-					'description' => Helper\Utf8\substr(trim(strip_tags(html_entity_decode($result['description'], ENT_QUOTES, 'UTF-8'))), 0, $this->config->get('config_product_description_length')) . '..',
+					'description' => oc_substr(trim(strip_tags(html_entity_decode($result['description'], ENT_QUOTES, 'UTF-8'))), 0, $this->config->get('config_product_description_length')) . '..',
 					'price'       => $price,
 					'special'     => $special,
 					'tax'         => $tax,
