@@ -11,7 +11,7 @@ class Mail {
 	 *
 	 * @param    array  $option
 	 */
-	public function __construct(array $option = []) {
+	public function __construct(array &$option = []) {
 		$this->option = $option;
 	}
 
@@ -21,8 +21,10 @@ class Mail {
 	 * @return    bool
 	 */
 	public function send(): bool {
+		print_r($this->option);
+
 		if (is_array($this->option['to'])) {
-			$to = implode(',',  $this->option['to']);
+			$to = implode(',', $this->option['to']);
 		} else {
 			$to = $this->option['to'];
 		}
@@ -74,21 +76,23 @@ class Mail {
 			$message .= '--' . $boundary . '_alt--' . $eol;
 		}
 
-		foreach ($this->option['attachments'] as $attachment) {
-			if (is_file($attachment)) {
-				$handle = fopen($attachment, 'r');
+		if (!empty($this->option['attachments'])) {
+			foreach ($this->option['attachments'] as $attachment) {
+				if (is_file($attachment)) {
+					$handle = fopen($attachment, 'r');
 
-				$content = fread($handle, filesize($attachment));
+					$content = fread($handle, filesize($attachment));
 
-				fclose($handle);
+					fclose($handle);
 
-				$message .= '--' . $boundary . $eol;
-				$message .= 'Content-Type: application/octet-stream; name="' . basename($attachment) . '"' . $eol;
-				$message .= 'Content-Transfer-Encoding: base64' . $eol;
-				$message .= 'Content-Disposition: attachment; filename="' . basename($attachment) . '"' . $eol;
-				$message .= 'Content-ID: <' . urlencode(basename($attachment)) . '>' . $eol;
-				$message .= 'X-Attachment-Id: ' . urlencode(basename($attachment)) . $eol . $eol;
-				$message .= chunk_split(base64_encode($content));
+					$message .= '--' . $boundary . $eol;
+					$message .= 'Content-Type: application/octet-stream; name="' . basename($attachment) . '"' . $eol;
+					$message .= 'Content-Transfer-Encoding: base64' . $eol;
+					$message .= 'Content-Disposition: attachment; filename="' . basename($attachment) . '"' . $eol;
+					$message .= 'Content-ID: <' . urlencode(basename($attachment)) . '>' . $eol;
+					$message .= 'X-Attachment-Id: ' . urlencode(basename($attachment)) . $eol . $eol;
+					$message .= chunk_split(base64_encode($content));
+				}
 			}
 		}
 
@@ -96,7 +100,7 @@ class Mail {
 
 		ini_set('sendmail_from', $this->option['from']);
 
-		if ($this->option['parameter']) {
+		if (!empty($this->option['parameter'])) {
 			return mail($to, '=?UTF-8?B?' . base64_encode($this->option['subject']) . '?=', $message, $header, $this->option['parameter']);
 		} else {
 			return mail($to, '=?UTF-8?B?' . base64_encode($this->option['subject']) . '?=', $message, $header);

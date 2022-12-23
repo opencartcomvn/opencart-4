@@ -13,21 +13,22 @@
 namespace Opencart\System\Library;
 class Mail {
 	private object $adaptor;
-	protected array $option = [];
+	private array $option = [];
 
 	/**
 	 * Constructor
 	 *
 	 * @param	string	$adaptor
-	 * @param    array  $option
+	 * @param   array	$option
 	 *
  	*/
 	public function __construct(string $adaptor = 'mail', array $option = []) {
 		$class = 'Opencart\System\Library\Mail\\' . $adaptor;
 
 		if (class_exists($class)) {
+			$this->option = &$option;
+
 			$this->adaptor = new $class($option);
-			$this->option = $option;
 		} else {
 			throw new \Exception('Error: Could not load mail adaptor ' . $adaptor . '!');
 		}
@@ -40,7 +41,7 @@ class Mail {
 	 *
 	 * @return  void
      */
-	public function setTo(string $to): void {
+	public function setTo(string|array $to): void {
 		$this->option['to'] = $to;
 	}
 
